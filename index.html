@@ -45,6 +45,7 @@
   .lang button{border:0;background:transparent;color:var(--faint);font:inherit;font-size:11.5px;
     font-weight:800;padding:5px 11px;border-radius:999px;cursor:pointer;transition:.25s var(--ease)}
   .lang button.on{color:var(--bg);background:var(--gold)}
+  .lang button:disabled{cursor:not-allowed;pointer-events:none}
 
   /* ---------- hero ---------- */
   .hero{position:relative;padding:30px 0 26px;overflow:hidden}
@@ -121,6 +122,29 @@
   .pzr .pzi:before{content:"";position:absolute;left:2px;top:11px;width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.5}
   .pzr.lvl .pzi:before{background:var(--neu)} .pzr.news .pzi:before{background:var(--neg)} .pzr.tech .pzi:before{background:var(--pos)}
   .pzempty{font-size:12px;color:var(--faint);font-style:italic}
+
+  /* ---------- top groups (leaderboard) ---------- */
+  .tg-grid{display:grid;grid-template-columns:1fr;gap:12px}
+  @media(min-width:760px){.tg-grid{grid-template-columns:repeat(3,1fr)}}
+  .tg-col{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;transition:border-color .3s var(--ease)}
+  .tg-col-h{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px}
+  .tg-col-h i{width:9px;height:9px;border-radius:50%;flex:none}
+  .tg-col.pos .tg-col-h{color:var(--pos-ink)} .tg-col.pos .tg-col-h i{background:var(--pos)}
+  .tg-col.neu .tg-col-h{color:var(--neu-ink)} .tg-col.neu .tg-col-h i{background:var(--neu)}
+  .tg-col.neg .tg-col-h{color:var(--neg-ink)} .tg-col.neg .tg-col-h i{background:var(--neg)}
+  .tg-list{display:flex;flex-direction:column;gap:10px}
+  .tg-item{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:9px}
+  .tg-rank{font-size:11px;font-weight:800;color:var(--faint);text-align:center;font-variant-numeric:tabular-nums}
+  .tg-main{min-width:0}
+  .tg-name{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+  .tg-track{height:5px;border-radius:4px;background:rgba(120,90,30,.08);overflow:hidden;margin-top:5px}
+  .tg-track span{display:block;height:100%;width:0;border-radius:4px;transition:width 1s var(--ease)}
+  .tg-col.pos .tg-track span{background:var(--pos)}
+  .tg-col.neu .tg-track span{background:var(--neu)}
+  .tg-col.neg .tg-track span{background:var(--neg)}
+  .tg-pct{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+  .tg-col.pos .tg-pct{color:var(--pos-ink)} .tg-col.neu .tg-pct{color:var(--neu-ink)} .tg-col.neg .tg-pct{color:var(--neg-ink)}
+  .tg-empty{font-size:12px;color:var(--faint);font-style:italic}
 
   /* ---------- group cards ---------- */
   .ga{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-top:13px;overflow:hidden;transition:border-color .3s var(--ease)}
@@ -303,8 +327,8 @@
   <div class="wrap">
     <div class="brand"><span class="dot"></span><span id="brand-main">Gold Market</span><span class="sub" id="brand-sub">Executive Dashboard</span></div>
     <div class="lang" id="lang">
-      <button data-lang="th">ไทย</button>
-      <button data-lang="en" class="on">EN</button>
+      <button data-lang="th" class="on">ไทย</button>
+      <button data-lang="en" disabled aria-disabled="true">EN</button>
     </div>
   </div>
 </div>
@@ -382,6 +406,16 @@
     <div class="pz" id="pz"></div>
   </section>
 
+  <!-- TOP GROUPS -->
+  <section class="sec reveal">
+    <div class="sec-h"><span class="n">03</span><h2 id="tgh2">กลุ่มเด่นตามอารมณ์</h2><span class="meta" id="tgmeta"></span></div>
+    <div class="tg-grid">
+      <div class="tg-col pos"><div class="tg-col-h"><i></i><span id="tg-h-pos">เชิงบวกสูงสุด</span></div><div class="tg-list" id="tg-pos"></div></div>
+      <div class="tg-col neu"><div class="tg-col-h"><i></i><span id="tg-h-neu">เป็นกลางสูงสุด</span></div><div class="tg-list" id="tg-neu"></div></div>
+      <div class="tg-col neg"><div class="tg-col-h"><i></i><span id="tg-h-neg">เชิงลบสูงสุด</span></div><div class="tg-list" id="tg-neg"></div></div>
+    </div>
+  </section>
+
   <!-- GROUP ANALYSIS -->
   <section class="sec reveal">
     <div class="sec-h"><span class="n">04</span><h2 id="s4h2">วิเคราะห์รายกลุ่ม</h2><span class="meta" id="s4meta"></span></div>
@@ -408,7 +442,7 @@
   const num=(v)=>Number(String(v==null?0:v).replace(/,/g,""))||0;
   const uniq=(a)=>[...new Set(a.map(i=>String(i||"").trim()).filter(Boolean))];
 
-  let LANG="en", allRows=[], selectedDate=null;
+  let LANG="th", allRows=[], selectedDate=null;
   const t=(th,en)=>LANG==="en"?en:th;
 
   const hasVal=(v)=>{
@@ -427,6 +461,15 @@
   };
   const af=(row,b)=>{const v=jf(row,b);return Array.isArray(v)?v:[];};
   const of=(row,b)=>{const v=jf(row,b);return v&&typeof v==="object"&&!Array.isArray(v)?v:{};};
+  // normalize any item (string OR object) to display text, so nothing is dropped / shown as [object Object]
+  const asText=(x)=>{
+    if(x==null)return"";
+    if(typeof x==="string")return x.trim();
+    if(typeof x==="object")return String(x.comment_text_th||x.comment_text||x.evidence_text||x.text||x.point||x.title||x.name||x.detail||x.description||x.value||"").trim();
+    return String(x).trim();
+  };
+  // text bullets from a field that may be an array, a single string, or an array of objects
+  const tl=(row,b)=>{const v=jf(row,b);const a=Array.isArray(v)?v:(hasVal(v)?[v]:[]);return uniq(a.map(asText)).filter(Boolean);};
   const gname=(row)=>{const n=LANG==="en"?(row.group_name_en||row.group_name_th):(row.group_name_th||row.group_name_en);return String(n||"").trim()||t("กลุ่มไม่มีชื่อ","Untitled");};
   const sent=(row)=>({neg:num(row.negative_percent),neu:num(row.neutral_percent),pos:num(row.positive_percent)});
   const mood=(row)=>{const m=String(row.overall_mood||"").toLowerCase();return ["positive","negative","mixed","neutral"].includes(m)?m:"neutral";};
@@ -502,6 +545,10 @@
     S("s2h2",t("จิตวิทยาราคา","Price psychology"));
     S("s3h2",t("อารมณ์รายกลุ่ม","Mood by group"));
     S("gb-lbl",t("เรียงตามเชิงลบ","Sorted by negative"));
+    S("tgh2",t("กลุ่มเด่นตามอารมณ์","Top groups by mood"));
+    S("tg-h-pos",t("เชิงบวกสูงสุด","Most positive"));
+    S("tg-h-neu",t("เป็นกลางสูงสุด","Most neutral"));
+    S("tg-h-neg",t("เชิงลบสูงสุด","Most negative"));
     S("s4h2",t("วิเคราะห์รายกลุ่ม","Group analysis"));
     S("lg-neg",t("เชิงลบ","Negative"));S("lg-neu",t("เป็นกลาง","Neutral"));S("lg-pos",t("เชิงบวก","Positive"));
     S("ml-neg",t("เชิงลบ","Negative"));S("ml-neu",t("เป็นกลาง","Neutral"));S("ml-pos",t("เชิงบวก","Positive"));
@@ -639,6 +686,7 @@
     ring(aN,aU,aP);
     priceZones(rows);
     groupBars(rows);
+    topGroups(rows);
     groupCards(ranked);
 
     $("footer").innerHTML=t(`ข้อมูลสดจาก Supabase · <b>${esc(window.SUPABASE_CONFIG.table)}</b><br>อัปเดต ${day}`,`Live from Supabase · <b>${esc(window.SUPABASE_CONFIG.table)}</b><br>updated ${day}`);
@@ -691,6 +739,26 @@
     $("gb-hint").textContent=t("แตะกลุ่มด้านล่างเพื่อดูเชิงลึก","tap a group below for detail");
   }
 
+  function topGroups(rows){
+    const TOP=5;
+    const fill=(id,key)=>{
+      const el=$(id);if(!el)return;
+      const sorted=[...rows].sort((a,b)=>sent(b)[key]-sent(a)[key]).slice(0,TOP);
+      el.innerHTML=sorted.length?sorted.map((r,i)=>{
+        const v=Math.round(sent(r)[key]);
+        return `<div class="tg-item"><div class="tg-rank">${i+1}</div>`
+          +`<div class="tg-main"><div class="tg-name" title="${esc(gname(r))}">${esc(gname(r))}</div>`
+          +`<div class="tg-track"><span data-w="${v}"></span></div></div>`
+          +`<div class="tg-pct">${v}%</div></div>`;
+      }).join(""):`<div class="tg-empty">${t("ไม่มีข้อมูล","No data")}</div>`;
+    };
+    fill("tg-pos","pos");fill("tg-neu","neu");fill("tg-neg","neg");
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      document.querySelectorAll(".tg-track span").forEach(s=>{s.style.width=s.dataset.w+"%";});
+    }));
+    $("tgmeta").textContent=t(`${rows.length} กลุ่ม`,`${rows.length} groups`);
+  }
+
   function emoPanel(cls,reason,comments){
     const list=Array.isArray(comments)?comments:(comments?[comments]:[]);
     const q=list.length?`<ul class="quotes">${list.map((c,i)=>`<li data-n="${i+1}"><span class="qmeta">${esc(cmKind(c))}</span><span class="qt">${esc(cmText(c))}</span>${cmAct(c)?`<span class="qa">→ ${esc(cmAct(c))}</span>`:""}</li>`).join("")}</ul>`
@@ -703,7 +771,7 @@
     const cp=(l)=>({high:t("มั่นใจสูง","High confidence"),medium:t("มั่นใจปานกลาง","Medium confidence"),low:t("มั่นใจต่ำ","Low confidence")}[l]);
     $("groups").innerHTML=ranked.map(({row},i)=>{
       const s=sent(row),m=mood(row),c=conf(row);
-      const o=opps(row),pains=af(row,"main_customer_pain"),demand=af(row,"demand_signals"),find=af(row,"short_report");
+      const o=opps(row),pains=tl(row,"main_customer_pain"),demand=tl(row,"demand_signals"),find=tl(row,"short_report");
       const b=of(row,"sentiment_basis");
       const posC=evidenceFor(row,"positive",af(row,"top_positive_comments")),negC=evidenceFor(row,"negative",af(row,"top_negative_comments")),neuC=evidenceFor(row,"neutral",af(row,"top_neutral_comments"));
       const top=o[0];const url=esc(row.group_url||"#");

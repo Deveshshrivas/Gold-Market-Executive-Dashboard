@@ -119,7 +119,10 @@
   .gb-card .lbl .hint{color:var(--faint);font-weight:700;letter-spacing:.02em;text-transform:none;font-size:10px}
   .gbrow{margin-bottom:12px}
   .gbrow:last-child{margin-bottom:0}
-  .gbrow .gn{font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gbhd{display:flex;align-items:baseline;gap:10px;margin-bottom:5px}
+  .gbrow .gn{font-size:12.5px;font-weight:700;color:var(--ink);min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gbfol{margin-left:auto;flex-shrink:0;font-size:11px;font-weight:800;color:var(--faint);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .gbfol::before{content:"◆ ";color:var(--gold);font-size:8px}
   .gbar{height:20px;border-radius:7px;overflow:hidden;display:flex;background:rgba(120,90,30,.07)}
   .gbar span{height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;
     transition:width 1s var(--ease)}
@@ -767,7 +770,7 @@
     const sorted=[...rows].sort((a,b)=>sent(b).neg-sent(a).neg);
     const seg=(w,bg,ink)=>w>0?`<span style="width:0%;background:${bg}" data-w="${w}">${w>=10?`<b style="color:${ink}">${w}%</b>`:""}</span>`:"";
     $("gbars").innerHTML=sorted.map(r=>{const s=sent(r);
-      return `<div class="gbrow"><div class="gn gname-link" data-key="${esc(folKey(r))}" title="${esc(gname(r))}">${esc(gname(r))}</div><div class="gbar">${seg(s.neg,"var(--neg)","#fff")}${seg(s.neu,"var(--neu)","#4a3c10")}${seg(s.pos,"var(--pos)","#fff")}</div></div>`;
+      return `<div class="gbrow"><div class="gbhd"><div class="gn gname-link" data-key="${esc(folKey(r))}" title="${esc(gname(r))}">${esc(gname(r))}</div><div class="gbfol" title="${t("ผู้ติดตาม","followers")}">${cnum(gFollow(r))}</div></div><div class="gbar">${seg(s.neg,"var(--neg)","#fff")}${seg(s.neu,"var(--neu)","#4a3c10")}${seg(s.pos,"var(--pos)","#fff")}</div></div>`;
     }).join("");
     // animate widths after paint
     requestAnimationFrame(()=>requestAnimationFrame(()=>{

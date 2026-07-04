@@ -875,19 +875,27 @@
     let acc=0;
     const segs=slices.map(s=>{
       const len=s.v/total*C;
-      const seg=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="${s.c}" stroke-width="18" stroke-linecap="butt" stroke-dasharray="${Math.max(.1,len-GAP)} ${C}" stroke-dashoffset="${-acc}"><title>${esc(s.name)}: ${s.v.toLocaleString()}</title></circle>`;
+      // start collapsed (0.1) and sweep to full length, staggered so slices appear clockwise in turn
+      const seg=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="${s.c}" stroke-width="18" stroke-linecap="butt" stroke-dasharray="0.1 ${C}" data-dash="${Math.max(.1,len-GAP)} ${C}" stroke-dashoffset="${-acc}" style="transition:stroke-dasharray .9s var(--ease) ${(acc/C*.5).toFixed(2)}s"><title>${esc(s.name)}: ${s.v.toLocaleString()}</title></circle>`;
       acc+=len;return seg;
     }).join("");
     const pct=(v)=>{const p=v/total*100;return p<1?"<1%":Math.round(p)+"%";};
     el.innerHTML=`<div class="gr-pie">
       <svg width="128" height="128" viewBox="0 0 120 120" role="img"><g transform="rotate(-90 60 60)">${segs}</g>
-        <text x="60" y="58" text-anchor="middle" class="pie-big">${cnum(total)}</text>
+        <text x="60" y="58" text-anchor="middle" class="pie-big">0</text>
         <text x="60" y="73" text-anchor="middle" class="pie-cap">${t("รวม","total")}</text></svg>
       <div class="pleg">${slices.map(s=>
         `<div class="pleg-row" title="${esc(s.name)}: ${s.v.toLocaleString()}"><i style="background:${s.c}"></i>`
         +`<span class="pleg-n${s.key?" gname-link":""}"${s.key?` data-key="${esc(s.key)}"`:""}>${esc(s.name)}</span>`
         +`<span class="pleg-v">${cnum(s.v)}</span><span class="pleg-p">${pct(s.v)}</span></div>`).join("")}</div>
     </div>`;
+    // sweep the slices in and count the centre total up
+    let big=total,sfx="";
+    if(total>=1e6){big=+(total/1e6).toFixed(1);sfx="M";}else if(total>=1e3){big=+(total/1e3).toFixed(1);sfx="K";}
+    animateNum(el.querySelector(".pie-big"),big,sfx);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.querySelectorAll("circle[data-dash]").forEach(c=>c.setAttribute("stroke-dasharray",c.dataset.dash));
+    }));
   }
   function reachCharts(rows){
     const folEl=$("gr-fol"),engEl=$("gr-eng");

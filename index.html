@@ -196,7 +196,10 @@
   .gr-rows{display:flex;flex-direction:column;gap:9px}
   /* follower-share donut + legend */
   .gr-pie{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-  .gr-pie svg{flex:none}
+  .gr-pie svg{flex:none;overflow:visible}
+  .pslice.gname-link{cursor:pointer}
+  .gr-pie svg:hover .pslice{opacity:.45}
+  .gr-pie svg .pslice:hover{opacity:1;stroke-width:23}
   .pie-big{font-size:17px;font-weight:800;fill:var(--ink);letter-spacing:-.02em}
   .pie-cap{font-size:8px;font-weight:800;fill:var(--faint);letter-spacing:.08em;text-transform:uppercase}
   .pleg{flex:1;min-width:150px;display:flex;flex-direction:column;gap:7px}
@@ -876,7 +879,7 @@
     const segs=slices.map(s=>{
       const len=s.v/total*C;
       // start collapsed (0.1) and sweep to full length, staggered so slices appear clockwise in turn
-      const seg=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="${s.c}" stroke-width="18" stroke-linecap="butt" stroke-dasharray="0.1 ${C}" data-dash="${Math.max(.1,len-GAP)} ${C}" stroke-dashoffset="${-acc}" style="transition:stroke-dasharray .9s var(--ease) ${(acc/C*.5).toFixed(2)}s"><title>${esc(s.name)}: ${s.v.toLocaleString()}</title></circle>`;
+      const seg=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="${s.c}" stroke-width="18" stroke-linecap="butt" class="pslice${s.key?" gname-link":""}"${s.key?` data-key="${esc(s.key)}"`:""} stroke-dasharray="0.1 ${C}" data-dash="${Math.max(.1,len-GAP)} ${C}" stroke-dashoffset="${-acc}" style="transition:stroke-dasharray .9s var(--ease) ${(acc/C*.5).toFixed(2)}s,stroke-width .25s var(--ease),opacity .25s var(--ease)"><title>${esc(s.name)}: ${s.v.toLocaleString()}</title></circle>`;
       acc+=len;return seg;
     }).join("");
     const pct=(v)=>{const p=v/total*100;return p<1?"<1%":Math.round(p)+"%";};

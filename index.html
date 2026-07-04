@@ -134,12 +134,12 @@
   /* ---------- price psychology ---------- */
   .pz{display:flex;flex-direction:column;gap:9px}
   .pzr{border-radius:var(--radius-sm);padding:13px 14px;border:1px solid var(--line)}
-  .pzr.lvl{background:var(--neu-bg)} .pzr.news{background:var(--neg-bg)} .pzr.tech{background:var(--pos-bg)}
+  .pzr.lvl{background:var(--neu-bg)} .pzr.tech{background:var(--pos-bg)}
   .pzr .pzt{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;display:flex;align-items:center;gap:6px}
-  .pzr.lvl .pzt{color:var(--neu-ink)} .pzr.news .pzt{color:var(--neg-ink)} .pzr.tech .pzt{color:var(--pos-ink)}
+  .pzr.lvl .pzt{color:var(--neu-ink)} .pzr.tech .pzt{color:var(--pos-ink)}
   .pzr .pzi{font-size:12.5px;color:var(--ink);line-height:1.5;padding:3px 0 3px 14px;position:relative;font-weight:700}
   .pzr .pzi:before{content:"";position:absolute;left:2px;top:11px;width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.5}
-  .pzr.lvl .pzi:before{background:var(--neu)} .pzr.news .pzi:before{background:var(--neg)} .pzr.tech .pzi:before{background:var(--pos)}
+  .pzr.lvl .pzi:before{background:var(--neu)} .pzr.tech .pzi:before{background:var(--pos)}
   .pzempty{font-size:12px;color:var(--faint);font-style:italic}
 
   /* ---------- top groups (leaderboard) ---------- */
@@ -332,17 +332,14 @@
   .exec-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--gold2);flex:none}
   .exec-label{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55)}
   .exec-text{margin-top:7px;font-size:15px;line-height:1.56;color:#F6F1E4;font-weight:700}
-  .exec-foot{margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.13);
-    font-size:11px;font-weight:700;color:rgba(255,255,255,.5)}
-
-  /* ---- KPI strip: now 5 cards ---- */
-  .kpis{grid-template-columns:repeat(3,1fr)}
+  /* ---- KPI strip: now 4 cards ---- */
+  .kpis{grid-template-columns:repeat(2,1fr)}
   .kpi{padding:11px 9px}
   .kpi .v{font-size:18px}
   .kpi .l{font-size:8.6px;line-height:1.3}
-  @media(min-width:520px){.kpis{grid-template-columns:repeat(5,1fr)}}
-  @media(min-width:860px){.kpis{grid-template-columns:repeat(3,1fr)}}
-  @media(min-width:1080px){.kpis{grid-template-columns:repeat(5,1fr)}}
+  @media(min-width:520px){.kpis{grid-template-columns:repeat(4,1fr)}}
+  @media(min-width:860px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:1080px){.kpis{grid-template-columns:repeat(4,1fr)}}
 
   /* ================= NEW: market temperature section ================= */
   .sec-sub{margin:-6px 0 14px;font-size:12.5px;line-height:1.55;color:var(--faint);font-weight:700;max-width:64ch}
@@ -409,7 +406,6 @@
         <div class="kpis" id="kpis">
           <div class="kpi skel" style="height:58px"></div><div class="kpi skel" style="height:58px"></div>
           <div class="kpi skel" style="height:58px"></div><div class="kpi skel" style="height:58px"></div>
-          <div class="kpi skel" style="height:58px"></div><div class="kpi skel" style="height:58px"></div>
         </div>
       </div>
       <div class="hero-right">
@@ -417,7 +413,6 @@
           <div class="exec-badge"><span class="dot"></span><span id="exec-badge-t">—</span></div>
           <div class="exec-label" id="vk">◆ บทวิเคราะห์ผู้บริหาร</div>
           <div class="exec-text num" id="vt">กำลังโหลดข้อมูล…</div>
-          <div class="exec-foot num" id="exec-foot"></div>
         </div>
       </div>
     </div>
@@ -550,7 +545,14 @@
   const gFollow=(row)=>FOLLOW[folKey(row)]||num(row.group_member_count);
   // per-group client summary popover (hover a group name in the bars / top lists to preview its points)
   let ROWBYKEY={};
-  const summaryPoints=(row)=>uniq(af(row,"client_summary_3_points").map(asText)).filter(Boolean).slice(0,3);
+  const MOOD_FIELD={pos:"positive_summary_2_points",neu:"neutral_summary_2_points",neg:"negative_summary_2_points"};
+  const summaryPoints=(row,mood)=>{
+    if(mood&&MOOD_FIELD[mood]){
+      const p=uniq(af(row,MOOD_FIELD[mood]).map(asText)).filter(Boolean).slice(0,3);
+      if(p.length)return p;
+    }
+    return uniq(af(row,"client_summary_3_points").map(asText)).filter(Boolean).slice(0,3);
+  };
   const cnum=(n)=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e3?(n/1e3).toFixed(1).replace(/\.0$/,"")+"K":String(n);
   const score=(row,mx)=>{const e=eng(row);const s=opps(row).length+af(row,"demand_signals").length+af(row,"main_customer_pain").length;const n=sent(row).neg;return Math.max(8,Math.min(99,Math.round((mx?e/mx:0)*45+cw[conf(row)]*25+Math.min(s,8)/8*20+n/100*10)));};
   const cmText=(c)=>typeof c==="string"?c:(c.comment_text_th||c.comment_text||c.evidence_text||c.text||c.point||"");
@@ -718,37 +720,27 @@
 
     const tPosts=rows.reduce((s,r)=>s+num(r.posts_found),0);
     const tCom=rows.reduce((s,r)=>s+num(r.comments_found),0);
-    const tReact=rows.reduce((s,r)=>s+num(r.total_reactions),0);
-    // total followers: one count per unique group, using its latest non-null member count from history
+    // followers lookup: latest non-null member count per unique group (used by charts + cards)
     FOLLOW={};
     allRows.slice().sort((a,b)=>rts(b)-rts(a)).forEach(r=>{
       const k=folKey(r);
       if(k&&FOLLOW[k]===undefined&&num(r.group_member_count)>0)FOLLOW[k]=num(r.group_member_count);
     });
-    const folSeen=new Set();
-    const tFollow=rows.reduce((s,r)=>{
-      const k=folKey(r);
-      if(!k||folSeen.has(k))return s;
-      folSeen.add(k);
-      return s+gFollow(r);
-    },0);
     ROWBYKEY={};rows.forEach(r=>{ROWBYKEY[folKey(r)]=r;});
-    const fol=tFollow>=1e6?[+(tFollow/1e6).toFixed(1),"M"]:tFollow>=1e3?[+(tFollow/1e3).toFixed(1),"K"]:[tFollow,""];
 
     const wa=wAvg(rows);
     const aN=wa.neg,aU=wa.neu,aP=wa.pos;
-    const usableGroups=wa.usable,totalUnits=wa.weight;
+    const usableGroups=wa.usable;
 
     const mx=Math.max(1,...rows.map(eng));
     const ranked=rows.map(r=>({row:r,sc:score(r,mx)})).sort((a,b)=>b.sc-a.sc);
 
-    // KPIs: groups tracked, usable groups, posts, comments, total followers
+    // KPIs: groups tracked, usable groups, posts, comments
     $("kpis").innerHTML=[
       [rows.length,t("กลุ่มที่ติดตาม","Groups tracked")],
       [usableGroups,t("กลุ่มที่ใช้ได้","Usable groups")],
       [tPosts,t("โพสต์","Posts")],
-      [tCom,t("ความเห็น","Comments")],
-      [fol[0],t("ผู้ติดตามทั้งหมด","Total followers"),fol[1]]
+      [tCom,t("ความเห็น","Comments")]
     ].map((k,i)=>`<div class="kpi"><div class="v num" data-to="${k[0]}" data-sfx="${k[2]||""}">0${k[2]||""}</div><div class="l">${k[1]}</div></div>`).join("");
     document.querySelectorAll("#kpis .v").forEach(el=>animateNum(el,num(el.dataset.to),el.dataset.sfx));
 
@@ -756,9 +748,6 @@
     const ckey=classify(aN,aU,aP,rows);
     $("exec-badge-t").textContent=ec(ckey,"badge");
     $("vt").textContent=ec(ckey,"read");
-    $("exec-foot").textContent=t(
-      `${usableGroups} กลุ่มที่ใช้ได้ · ${totalUnits.toLocaleString()} หน่วยที่วิเคราะห์ · ${tReact.toLocaleString()} ปฏิกิริยา`,
-      `${usableGroups} usable groups · ${totalUnits.toLocaleString()} analyzed units · ${tReact.toLocaleString()} reactions`);
     $("decision-box").textContent=ec(ckey,"decision");
 
     const dqEl=$("dq-list");
@@ -808,12 +797,10 @@
   function priceZones(rows){
     const price=uniq(rows.flatMap(r=>arr(of(r,"gold_market_signals").price_levels_mentioned)));
     const tech=uniq(rows.flatMap(r=>arr(of(r,"gold_market_signals").technical_levels)));
-    const news=uniq(rows.flatMap(r=>arr(of(r,"gold_market_signals").global_news_reactions)));
     const blk=(cls,title,icon,items)=>`<div class="pzr ${cls}"><div class="pzt">${icon} ${title}</div>${items.length?items.slice(0,3).map(i=>`<div class="pzi">${esc(i)}</div>`).join(""):`<div class="pzempty">${t("ไม่มีข้อมูล","No data")}</div>`}</div>`;
     $("pz").innerHTML=
       blk("lvl",t("ระดับราคาที่พูดถึง","Price levels"),"◆",price)+
-      blk("tech",t("ระดับเทคนิค","Technical levels"),"▲",tech)+
-      blk("news",t("ปฏิกิริยาต่อข่าว","News reactions"),"●",news);
+      blk("tech",t("ระดับเทคนิค","Technical levels"),"▲",tech);
   }
 
   function groupBars(rows){
@@ -833,14 +820,13 @@
   }
 
   function topGroups(rows){
-    const TOP=5;
     const fill=(id,key)=>{
       const el=$(id);if(!el)return;
-      const sorted=[...rows].sort((a,b)=>sent(b)[key]-sent(a)[key]).slice(0,TOP);
+      const sorted=[...rows].sort((a,b)=>sent(b)[key]-sent(a)[key]);
       el.innerHTML=sorted.length?sorted.map((r,i)=>{
         const v=Math.round(sent(r)[key]);
         return `<div class="tg-item${i===0?" top1":""}"><div class="tg-rank">${i+1}</div>`
-          +`<div class="tg-main"><div class="tg-name gname-link" data-key="${esc(folKey(r))}" title="${esc(gname(r))}">${esc(gname(r))}</div>`
+          +`<div class="tg-main"><div class="tg-name gname-link" data-key="${esc(folKey(r))}" data-mood="${key}" title="${esc(gname(r))}">${esc(gname(r))}</div>`
           +`<div class="tg-track"><span data-w="${v}"></span></div>`
           +`<div class="tg-fol">${cnum(gFollow(r))} ${t("ผู้ติดตาม","followers")}</div></div>`
           +`<div class="tg-pct">${v}%</div></div>`;
@@ -978,8 +964,12 @@
   }
   function showPop(anchor,key,pinned){
     const row=ROWBYKEY[key];if(!row)return;
-    const pts=summaryPoints(row),pop=$("gpop");
-    pop.innerHTML=`<div class="gpop-h">${esc(gname(row))}</div>`
+    const mood=anchor.dataset?anchor.dataset.mood:"";
+    const pts=summaryPoints(row,mood),pop=$("gpop");
+    const tag=mood?{pos:`<span class="pill m-positive">${t("เชิงบวก","Positive")}</span>`,
+                    neu:`<span class="pill m-neutral">${t("เป็นกลาง","Neutral")}</span>`,
+                    neg:`<span class="pill m-negative">${t("เชิงลบ","Negative")}</span>`}[mood]||"":"";
+    pop.innerHTML=`<div class="gpop-h">${esc(gname(row))}${tag?` ${tag}`:""}</div>`
       +(pts.length?`<ul>${pts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`
                   :`<div class="gpop-empty">${t("ยังไม่มีสรุปสำหรับกลุ่มนี้","No summary for this group yet")}</div>`)
       +(pinned?`<button class="gpop-more" type="button">${t("ดูเพิ่มเติม","Show more")} →</button>`:"");

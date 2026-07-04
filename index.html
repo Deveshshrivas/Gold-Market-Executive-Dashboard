@@ -75,6 +75,22 @@
   .kpi .v{font-size:21px;font-weight:800;letter-spacing:-.02em}
   .kpi .l{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-top:3px}
 
+  /* ---------- group summary popover ---------- */
+  .gname-link{cursor:pointer;transition:color .15s}
+  .gname-link:hover{color:var(--gold-deep);text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(160,120,40,.4)}
+  .gpop{position:absolute;z-index:120;display:none;max-width:320px;min-width:220px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 12px 34px rgba(60,40,10,.18);padding:13px 15px}
+  .gpop-h{font-size:12.5px;font-weight:800;color:var(--ink);letter-spacing:-.01em;margin-bottom:9px;line-height:1.35}
+  .gpop ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .gpop li{position:relative;padding-left:15px;font-size:11.5px;line-height:1.5;color:var(--faint);font-weight:600}
+  .gpop li::before{content:"◆";position:absolute;left:0;top:1px;color:var(--gold);font-size:8px}
+  .gpop-empty{font-size:11.5px;color:var(--faint);font-weight:600}
+  .gpop-more{margin-top:12px;width:100%;border:0;cursor:pointer;border-radius:8px;
+    padding:8px 10px;font:inherit;font-size:11.5px;font-weight:800;letter-spacing:.02em;
+    background:var(--gold);color:var(--bg)}
+  .gpop-more:hover{background:var(--gold-deep)}
+
   /* ---------- section heads ---------- */
   .sec{margin-top:34px}
   .sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
@@ -199,7 +215,6 @@
   .epanel.pos .quotes li:before{background:var(--pos-bg);color:var(--pos-ink)}
   .quotes .qmeta{display:block;margin-bottom:4px;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
   .quotes .qt{display:block}
-  .quotes .qa{display:block;margin-top:8px;padding-top:7px;border-top:1px solid rgba(120,90,30,.10);font-size:11px;font-weight:700;color:var(--gold-deep)}
   .qempty{font-size:12px;color:var(--faint);font-style:italic}
   /* watch / demand */
   .blocks{margin-top:16px;display:flex;flex-direction:column;gap:14px}
@@ -270,14 +285,14 @@
   .exec-foot{margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.13);
     font-size:11px;font-weight:700;color:rgba(255,255,255,.5)}
 
-  /* ---- KPI strip: now 6 cards ---- */
+  /* ---- KPI strip: now 5 cards ---- */
   .kpis{grid-template-columns:repeat(3,1fr)}
   .kpi{padding:11px 9px}
   .kpi .v{font-size:18px}
   .kpi .l{font-size:8.6px;line-height:1.3}
-  @media(min-width:520px){.kpis{grid-template-columns:repeat(6,1fr)}}
+  @media(min-width:520px){.kpis{grid-template-columns:repeat(5,1fr)}}
   @media(min-width:860px){.kpis{grid-template-columns:repeat(3,1fr)}}
-  @media(min-width:1080px){.kpis{grid-template-columns:repeat(6,1fr)}}
+  @media(min-width:1080px){.kpis{grid-template-columns:repeat(5,1fr)}}
 
   /* ================= NEW: market temperature section ================= */
   .sec-sub{margin:-6px 0 14px;font-size:12.5px;line-height:1.55;color:var(--faint);font-weight:700;max-width:64ch}
@@ -328,7 +343,7 @@
     <div class="brand"><span class="dot"></span><span id="brand-main">Gold Market</span><span class="sub" id="brand-sub">Executive Dashboard</span></div>
     <div class="lang" id="lang">
       <button data-lang="th" class="on">ไทย</button>
-      <button data-lang="en" disabled aria-disabled="true">EN</button>
+      <button data-lang="en">EN</button>
     </div>
   </div>
 </div>
@@ -425,6 +440,8 @@
   <footer id="footer">กำลังโหลด…</footer>
 </main>
 
+<div class="gpop" id="gpop"></div>
+
 <script>
   window.SUPABASE_CONFIG = {
     url: "https://xzchavommefwgvxsnmwq.supabase.co",
@@ -477,9 +494,16 @@
   const opps=(row)=>af(row,"marketing_opportunities");
   const cw={high:1,medium:.72,low:.45};
   const eng=(row)=>num(row.total_reactions)+num(row.comments_found)*2;
+  // followers: latest non-null member count per unique group (built in render, used by KPIs + group cards)
+  const folKey=(r)=>String(r.group_url||r.group_name_th||r.group_name_en||"").trim().toLowerCase();
+  let FOLLOW={};
+  const gFollow=(row)=>FOLLOW[folKey(row)]||num(row.group_member_count);
+  // per-group client summary popover (hover a group name in the bars / top lists to preview its points)
+  let ROWBYKEY={};
+  const summaryPoints=(row)=>uniq(af(row,"client_summary_3_points").map(asText)).filter(Boolean).slice(0,3);
+  const cnum=(n)=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e3?(n/1e3).toFixed(1).replace(/\.0$/,"")+"K":String(n);
   const score=(row,mx)=>{const e=eng(row);const s=opps(row).length+af(row,"demand_signals").length+af(row,"main_customer_pain").length;const n=sent(row).neg;return Math.max(8,Math.min(99,Math.round((mx?e/mx:0)*45+cw[conf(row)]*25+Math.min(s,8)/8*20+n/100*10)));};
   const cmText=(c)=>typeof c==="string"?c:(c.comment_text_th||c.comment_text||c.evidence_text||c.text||c.point||"");
-  const cmAct=(c)=>typeof c==="object"?(c.suggested_action||c.why_it_matters||c.action||""):"";
   const cmKind=(c)=>c&&typeof c==="object"&&c.__basis?t("หลักฐานข้อมูล","Data evidence"):t("ความคิดเห็นจริง","Real comment");
 
   function addEvidence(out,seen,item,isBasis=false){
@@ -517,7 +541,7 @@
       const p=Math.min(1,(now-start)/dur);
       const e=1-Math.pow(1-p,3);
       const val=from+(to-from)*e;
-      el.textContent=(isInt?Math.round(val):val.toFixed(0)).toLocaleString()+suffix;
+      el.textContent=(isInt?Math.round(val).toLocaleString():val.toFixed(1))+suffix;
       if(p<1)requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -643,7 +667,21 @@
     const tPosts=rows.reduce((s,r)=>s+num(r.posts_found),0);
     const tCom=rows.reduce((s,r)=>s+num(r.comments_found),0);
     const tReact=rows.reduce((s,r)=>s+num(r.total_reactions),0);
-    const tOpp=rows.reduce((s,r)=>s+opps(r).length,0);
+    // total followers: one count per unique group, using its latest non-null member count from history
+    FOLLOW={};
+    allRows.slice().sort((a,b)=>rts(b)-rts(a)).forEach(r=>{
+      const k=folKey(r);
+      if(k&&FOLLOW[k]===undefined&&num(r.group_member_count)>0)FOLLOW[k]=num(r.group_member_count);
+    });
+    const folSeen=new Set();
+    const tFollow=rows.reduce((s,r)=>{
+      const k=folKey(r);
+      if(!k||folSeen.has(k))return s;
+      folSeen.add(k);
+      return s+gFollow(r);
+    },0);
+    ROWBYKEY={};rows.forEach(r=>{ROWBYKEY[folKey(r)]=r;});
+    const fol=tFollow>=1e6?[+(tFollow/1e6).toFixed(1),"M"]:tFollow>=1e3?[+(tFollow/1e3).toFixed(1),"K"]:[tFollow,""];
 
     const wa=wAvg(rows);
     const aN=wa.neg,aU=wa.neu,aP=wa.pos;
@@ -652,14 +690,13 @@
     const mx=Math.max(1,...rows.map(eng));
     const ranked=rows.map(r=>({row:r,sc:score(r,mx)})).sort((a,b)=>b.sc-a.sc);
 
-    // KPIs: groups tracked, usable groups, posts, comments, reactions, store openings
+    // KPIs: groups tracked, usable groups, posts, comments, total followers
     $("kpis").innerHTML=[
       [rows.length,t("กลุ่มที่ติดตาม","Groups tracked")],
       [usableGroups,t("กลุ่มที่ใช้ได้","Usable groups")],
       [tPosts,t("โพสต์","Posts")],
       [tCom,t("ความเห็น","Comments")],
-      [tReact,t("ปฏิกิริยา","Reactions")],
-      [tOpp,t("โอกาสเปิดร้าน","Store openings")]
+      [fol[0],t("ผู้ติดตามทั้งหมด","Total followers"),fol[1]]
     ].map((k,i)=>`<div class="kpi"><div class="v num" data-to="${k[0]}" data-sfx="${k[2]||""}">0${k[2]||""}</div><div class="l">${k[1]}</div></div>`).join("");
     document.querySelectorAll("#kpis .v").forEach(el=>animateNum(el,num(el.dataset.to),el.dataset.sfx));
 
@@ -730,7 +767,7 @@
     const sorted=[...rows].sort((a,b)=>sent(b).neg-sent(a).neg);
     const seg=(w,bg,ink)=>w>0?`<span style="width:0%;background:${bg}" data-w="${w}">${w>=10?`<b style="color:${ink}">${w}%</b>`:""}</span>`:"";
     $("gbars").innerHTML=sorted.map(r=>{const s=sent(r);
-      return `<div class="gbrow"><div class="gn" title="${esc(gname(r))}">${esc(gname(r))}</div><div class="gbar">${seg(s.neg,"var(--neg)","#fff")}${seg(s.neu,"var(--neu)","#4a3c10")}${seg(s.pos,"var(--pos)","#fff")}</div></div>`;
+      return `<div class="gbrow"><div class="gn gname-link" data-key="${esc(folKey(r))}" title="${esc(gname(r))}">${esc(gname(r))}</div><div class="gbar">${seg(s.neg,"var(--neg)","#fff")}${seg(s.neu,"var(--neu)","#4a3c10")}${seg(s.pos,"var(--pos)","#fff")}</div></div>`;
     }).join("");
     // animate widths after paint
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -747,7 +784,7 @@
       el.innerHTML=sorted.length?sorted.map((r,i)=>{
         const v=Math.round(sent(r)[key]);
         return `<div class="tg-item"><div class="tg-rank">${i+1}</div>`
-          +`<div class="tg-main"><div class="tg-name" title="${esc(gname(r))}">${esc(gname(r))}</div>`
+          +`<div class="tg-main"><div class="tg-name gname-link" data-key="${esc(folKey(r))}" title="${esc(gname(r))}">${esc(gname(r))}</div>`
           +`<div class="tg-track"><span data-w="${v}"></span></div></div>`
           +`<div class="tg-pct">${v}%</div></div>`;
       }).join(""):`<div class="tg-empty">${t("ไม่มีข้อมูล","No data")}</div>`;
@@ -761,7 +798,7 @@
 
   function emoPanel(cls,reason,comments){
     const list=Array.isArray(comments)?comments:(comments?[comments]:[]);
-    const q=list.length?`<ul class="quotes">${list.map((c,i)=>`<li data-n="${i+1}"><span class="qmeta">${esc(cmKind(c))}</span><span class="qt">${esc(cmText(c))}</span>${cmAct(c)?`<span class="qa">→ ${esc(cmAct(c))}</span>`:""}</li>`).join("")}</ul>`
+    const q=list.length?`<ul class="quotes">${list.map((c,i)=>`<li data-n="${i+1}"><span class="qmeta">${esc(cmKind(c))}</span><span class="qt">${esc(cmText(c))}</span></li>`).join("")}</ul>`
       :`<div class="qempty">${t("ไม่มีตัวอย่างความคิดเห็น","No example comments")}</div>`;
     return `<div class="epanel ${cls}">${reason?`<div class="ereason">${esc(reason)}</div>`:""}${q}</div>`;
   }
@@ -776,7 +813,7 @@
       const posC=evidenceFor(row,"positive",af(row,"top_positive_comments")),negC=evidenceFor(row,"negative",af(row,"top_negative_comments")),neuC=evidenceFor(row,"neutral",af(row,"top_neutral_comments"));
       const top=o[0];const url=esc(row.group_url||"#");
       return `
-      <div class="ga" data-i="${i}">
+      <div class="ga" data-i="${i}" data-key="${esc(folKey(row))}">
         <div class="ga-head" onclick="toggleGroup(this)">
           <div class="ga-row">
             <div class="ga-rank">${i+1}</div>
@@ -788,7 +825,7 @@
           <div class="ga-stats">
             <div class="ga-stat"><div class="sv num">${num(row.posts_found)}</div><div class="sl">${t("โพสต์","posts")}</div></div>
             <div class="ga-stat"><div class="sv num">${num(row.comments_found).toLocaleString()}</div><div class="sl">${t("ความเห็น","comments")}</div></div>
-            <div class="ga-stat"><div class="sv num">${num(row.total_reactions).toLocaleString()}</div><div class="sl">${t("ปฏิกิริยา","reactions")}</div></div>
+            <div class="ga-stat"><div class="sv num">${cnum(gFollow(row))}</div><div class="sl">${t("ผู้ติดตาม","followers")}</div></div>
             <div class="ga-stat"><div class="sv num">${o.length}</div><div class="sl">${t("โอกาส","openings")}</div></div>
           </div>
           ${top?`<div class="ga-headline"><span class="ar">↗</span><span>${esc(top.opportunity||top.business_action||"")}</span></div>`:""}
@@ -824,6 +861,45 @@
       setTimeout(()=>{if(ga.classList.contains("active"))body.style.maxHeight="2000px";},520);
     } else { body.style.maxHeight=body.scrollHeight+"px"; requestAnimationFrame(()=>{body.style.maxHeight="0px";}); }
   };
+  /* ---------- group summary popover (hover to preview, click to pin + open card) ---------- */
+  let POP_PINNED=null;
+  function positionPop(anchor){
+    const pop=$("gpop"),r=anchor.getBoundingClientRect();
+    pop.style.display="block";
+    const pw=pop.offsetWidth,ph=pop.offsetHeight;
+    let x=r.left,y=r.bottom+8;
+    if(x+pw>window.innerWidth-10)x=window.innerWidth-pw-10;
+    if(y+ph>window.innerHeight-10&&r.top-ph-8>0)y=r.top-ph-8;
+    pop.style.left=Math.max(10,x)+window.scrollX+"px";
+    pop.style.top =Math.max(10,y)+window.scrollY+"px";
+  }
+  function showPop(anchor,key,pinned){
+    const row=ROWBYKEY[key];if(!row)return;
+    const pts=summaryPoints(row),pop=$("gpop");
+    pop.innerHTML=`<div class="gpop-h">${esc(gname(row))}</div>`
+      +(pts.length?`<ul>${pts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`
+                  :`<div class="gpop-empty">${t("ยังไม่มีสรุปสำหรับกลุ่มนี้","No summary for this group yet")}</div>`)
+      +(pinned?`<button class="gpop-more" type="button">${t("ดูเพิ่มเติม","Show more")} →</button>`:"");
+    if(pinned){const b=pop.querySelector(".gpop-more");if(b)b.onclick=()=>openGroupCard(key);}
+    positionPop(anchor);
+  }
+  function hidePop(){if(!POP_PINNED)$("gpop").style.display="none";}
+  window.openGroupCard=(key)=>{
+    POP_PINNED=null;$("gpop").style.display="none";
+    const card=[...document.querySelectorAll("#groups .ga")].find(c=>c.dataset.key===key);
+    if(!card)return;
+    if(!card.classList.contains("active"))toggleGroup(card.querySelector(".ga-head"));
+    card.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+  document.addEventListener("mouseover",(e)=>{const el=e.target.closest(".gname-link");if(el&&!POP_PINNED)showPop(el,el.dataset.key,false);});
+  document.addEventListener("mouseout",(e)=>{const el=e.target.closest(".gname-link");if(el&&!POP_PINNED)hidePop();});
+  document.addEventListener("click",(e)=>{
+    const el=e.target.closest(".gname-link");
+    if(el){POP_PINNED=el.dataset.key;showPop(el,el.dataset.key,true);e.stopPropagation();return;}
+    if(POP_PINNED&&!e.target.closest("#gpop")){POP_PINNED=null;$("gpop").style.display="none";}
+  });
+  window.addEventListener("scroll",()=>{if(POP_PINNED)$("gpop").style.display="none",POP_PINNED=null;},{passive:true});
+
   window.emoTab=(btn,idx)=>{
     const tabs=btn.parentElement;const card=tabs.parentElement;
     tabs.querySelectorAll(".etab").forEach((b,i)=>b.classList.toggle("on",i===idx));

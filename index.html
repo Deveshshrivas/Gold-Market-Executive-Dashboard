@@ -915,7 +915,6 @@
             <div class="ga-stat"><div class="sv num">${num(row.posts_found)}</div><div class="sl">${t("โพสต์","posts")}</div></div>
             <div class="ga-stat"><div class="sv num">${num(row.comments_found).toLocaleString()}</div><div class="sl">${t("ความเห็น","comments")}</div></div>
             <div class="ga-stat"><div class="sv num">${cnum(gFollow(row))}</div><div class="sl">${t("ผู้ติดตาม","followers")}</div></div>
-            <div class="ga-stat"><div class="sv num">${o.length}</div><div class="sl">${t("โอกาส","openings")}</div></div>
           </div>
           ${top?`<div class="ga-headline"><span class="ar">↗</span><span>${esc(top.opportunity||top.business_action||"")}</span></div>`:""}
         </div>

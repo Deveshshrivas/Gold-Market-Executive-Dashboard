@@ -145,25 +145,69 @@
   /* ---------- top groups (leaderboard) ---------- */
   .tg-grid{display:grid;grid-template-columns:1fr;gap:12px}
   @media(min-width:760px){.tg-grid{grid-template-columns:repeat(3,1fr)}}
-  .tg-col{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;transition:border-color .3s var(--ease)}
-  .tg-col-h{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px}
+  .tg-col{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:0;overflow:hidden;transition:border-color .3s var(--ease),box-shadow .3s var(--ease)}
+  .tg-col:hover{box-shadow:var(--shadow)}
+  .tg-col::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+  .tg-col.pos::before{background:linear-gradient(90deg,var(--pos),transparent)}
+  .tg-col.neu::before{background:linear-gradient(90deg,var(--neu),transparent)}
+  .tg-col.neg::before{background:linear-gradient(90deg,var(--neg),transparent)}
+  .tg-col-h{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.06em;
+    text-transform:uppercase;padding:14px 16px 12px;border-bottom:1px solid var(--line)}
+  .tg-col.pos .tg-col-h{color:var(--pos-ink);background:var(--pos-bg)}
+  .tg-col.neu .tg-col-h{color:var(--neu-ink);background:var(--neu-bg)}
+  .tg-col.neg .tg-col-h{color:var(--neg-ink);background:var(--neg-bg)}
   .tg-col-h i{width:9px;height:9px;border-radius:50%;flex:none}
-  .tg-col.pos .tg-col-h{color:var(--pos-ink)} .tg-col.pos .tg-col-h i{background:var(--pos)}
-  .tg-col.neu .tg-col-h{color:var(--neu-ink)} .tg-col.neu .tg-col-h i{background:var(--neu)}
-  .tg-col.neg .tg-col-h{color:var(--neg-ink)} .tg-col.neg .tg-col-h i{background:var(--neg)}
-  .tg-list{display:flex;flex-direction:column;gap:10px}
-  .tg-item{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:9px}
-  .tg-rank{font-size:11px;font-weight:800;color:var(--faint);text-align:center;font-variant-numeric:tabular-nums}
+  .tg-col.pos .tg-col-h i{background:var(--pos)}
+  .tg-col.neu .tg-col-h i{background:var(--neu)}
+  .tg-col.neg .tg-col-h i{background:var(--neg)}
+  .tg-list{display:flex;flex-direction:column;padding:6px 16px 14px}
+  .tg-item{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:10px;
+    padding:9px 0;border-bottom:1px dashed rgba(120,90,30,.13)}
+  .tg-item:last-child{border-bottom:0}
+  .tg-rank{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+    font-size:10.5px;font-weight:800;color:var(--faint);background:rgba(120,90,30,.07);font-variant-numeric:tabular-nums}
+  .tg-item.top1 .tg-rank{color:#fff}
+  .tg-col.pos .tg-item.top1 .tg-rank{background:var(--pos)}
+  .tg-col.neu .tg-item.top1 .tg-rank{background:var(--neu);color:#4a3c10}
+  .tg-col.neg .tg-item.top1 .tg-rank{background:var(--neg)}
   .tg-main{min-width:0}
   .tg-name{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
-  .tg-track{height:5px;border-radius:4px;background:rgba(120,90,30,.08);overflow:hidden;margin-top:5px}
+  .tg-item.top1 .tg-name{font-weight:800}
+  .tg-track{height:6px;border-radius:4px;background:rgba(120,90,30,.08);overflow:hidden;margin-top:5px}
   .tg-track span{display:block;height:100%;width:0;border-radius:4px;transition:width 1s var(--ease)}
-  .tg-col.pos .tg-track span{background:var(--pos)}
-  .tg-col.neu .tg-track span{background:var(--neu)}
-  .tg-col.neg .tg-track span{background:var(--neg)}
+  .tg-col.pos .tg-track span{background:linear-gradient(90deg,var(--pos),#a9d4bb)}
+  .tg-col.neu .tg-track span{background:linear-gradient(90deg,var(--neu),#e9dc9a)}
+  .tg-col.neg .tg-track span{background:linear-gradient(90deg,var(--neg),#f2bda9)}
   .tg-pct{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+  .tg-item.top1 .tg-pct{font-size:16px;letter-spacing:-.02em}
   .tg-col.pos .tg-pct{color:var(--pos-ink)} .tg-col.neu .tg-pct{color:var(--neu-ink)} .tg-col.neg .tg-pct{color:var(--neg-ink)}
-  .tg-empty{font-size:12px;color:var(--faint);font-style:italic}
+  .tg-fol{font-size:10px;font-weight:700;color:var(--faint);margin-top:2px;font-variant-numeric:tabular-nums}
+  .tg-fol::before{content:"◆ ";color:var(--gold);font-size:7px}
+  .tg-empty{font-size:12px;color:var(--faint);font-style:italic;padding:12px 0}
+
+  /* ---------- group reach charts (followers / engagement) ---------- */
+  .gr-grid{display:grid;grid-template-columns:1fr;gap:12px}
+  @media(min-width:760px){.gr-grid{grid-template-columns:1fr 1fr}}
+  .gr-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .gr-t{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--soft);margin-bottom:13px}
+  .gr-t i{width:9px;height:9px;border-radius:3px;flex:none}
+  .gr-rows{display:flex;flex-direction:column;gap:9px}
+  /* follower-share donut + legend */
+  .gr-pie{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .gr-pie svg{flex:none}
+  .pie-big{font-size:17px;font-weight:800;fill:var(--ink);letter-spacing:-.02em}
+  .pie-cap{font-size:8px;font-weight:800;fill:var(--faint);letter-spacing:.08em;text-transform:uppercase}
+  .pleg{flex:1;min-width:150px;display:flex;flex-direction:column;gap:7px}
+  .pleg-row{display:grid;grid-template-columns:10px minmax(0,1fr) auto auto;gap:8px;align-items:center}
+  .pleg-row i{width:10px;height:10px;border-radius:3px}
+  .pleg-n{font-size:11.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pleg-v{font-size:11px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+  .pleg-p{font-size:10.5px;font-weight:700;color:var(--faint);font-variant-numeric:tabular-nums;min-width:30px;text-align:right}
+  /* embedded inside the market-temperature card: stacked, borderless, divider on top */
+  .mt-card .gr-grid{grid-template-columns:1fr;gap:16px}
+  .mt-card .gr-card{border:0;padding:14px 0 0;background:none;border-top:1px solid var(--line);border-radius:0}
 
   /* ---------- group cards ---------- */
   .ga{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-top:13px;overflow:hidden;transition:border-color .3s var(--ease)}
@@ -402,6 +446,16 @@
           </div>
         </div>
         <div class="decision-box" id="decision-box"></div>
+        <div class="gr-grid">
+          <div class="gr-card">
+            <div class="gr-t"><i style="background:var(--gold)"></i><span id="gr-t-fol">ผู้ติดตามต่อกลุ่ม</span></div>
+            <div class="gr-rows" id="gr-fol"></div>
+          </div>
+          <div class="gr-card">
+            <div class="gr-t"><i style="background:#2E8B62"></i><span id="gr-t-eng">การมีส่วนร่วมต่อกลุ่ม</span></div>
+            <div class="gr-rows" id="gr-eng"></div>
+          </div>
+        </div>
       </div>
       <div class="mt-card mood-card">
         <div class="dq-h" id="s3h2">อารมณ์รายกลุ่ม</div>
@@ -409,9 +463,9 @@
           <div class="lbl"><span id="gb-lbl">เรียงตามเชิงลบ</span><span class="hint" id="gb-hint"></span></div>
           <div id="gbars"></div>
           <div class="mini-leg">
-            <span><i style="background:var(--neg)"></i><span id="ml-neg">เชิงลบ</span></span>
-            <span><i style="background:var(--neu)"></i><span id="ml-neu">เป็นกลาง</span></span>
             <span><i style="background:var(--pos)"></i><span id="ml-pos">เชิงบวก</span></span>
+            <span><i style="background:var(--neu)"></i><span id="ml-neu">เป็นกลาง</span></span>
+            <span><i style="background:var(--neg)"></i><span id="ml-neg">เชิงลบ</span></span>
           </div>
         </div>
       </div>
@@ -571,12 +625,14 @@
     S("dq-h",t("ข้อสังเกตด้านคุณภาพข้อมูล","Data-quality read"));
     S("s2h2",t("จิตวิทยาราคา","Price psychology"));
     S("s3h2",t("อารมณ์รายกลุ่ม","Mood by group"));
-    S("gb-lbl",t("เรียงตามเชิงลบ","Sorted by negative"));
+    S("gb-lbl",t("เรียงตามเชิงบวก","Sorted by positive"));
     S("tgh2",t("กลุ่มเด่นตามอารมณ์","Top groups by mood"));
     S("tg-h-pos",t("เชิงบวกสูงสุด","Most positive"));
     S("tg-h-neu",t("เป็นกลางสูงสุด","Most neutral"));
     S("tg-h-neg",t("เชิงลบสูงสุด","Most negative"));
     S("s4h2",t("วิเคราะห์รายกลุ่ม","Group analysis"));
+    S("gr-t-fol",t("สัดส่วนผู้ติดตามต่อกลุ่ม","Follower share by group"));
+    S("gr-t-eng",t("สัดส่วนการมีส่วนร่วมต่อกลุ่ม (ปฏิกิริยา + ความเห็น)","Engagement share by group (reactions + comments)"));
     S("lg-neg",t("เชิงลบ","Negative"));S("lg-neu",t("เป็นกลาง","Neutral"));S("lg-pos",t("เชิงบวก","Positive"));
     S("ml-neg",t("เชิงลบ","Negative"));S("ml-neu",t("เป็นกลาง","Neutral"));S("ml-pos",t("เชิงบวก","Positive"));
     S("ring-cap",t("แรงกดดันเชิงลบ","Negative pressure"));
@@ -727,6 +783,7 @@
     priceZones(rows);
     groupBars(rows);
     topGroups(rows);
+    reachCharts(rows);
     groupCards(ranked);
 
     $("footer").innerHTML=t(`ข้อมูลสดจาก Supabase · <b>${esc(window.SUPABASE_CONFIG.table)}</b><br>อัปเดต ${day}`,`Live from Supabase · <b>${esc(window.SUPABASE_CONFIG.table)}</b><br>updated ${day}`);
@@ -767,10 +824,13 @@
   }
 
   function groupBars(rows){
-    const sorted=[...rows].sort((a,b)=>sent(b).neg-sent(a).neg);
+    const sorted=[...rows].sort((a,b)=>{
+      const sa=sent(a),sb=sent(b);
+      return (sb.pos-sa.pos)||(sb.neu-sa.neu)||(sa.neg-sb.neg);
+    });
     const seg=(w,bg,ink)=>w>0?`<span style="width:0%;background:${bg}" data-w="${w}">${w>=10?`<b style="color:${ink}">${w}%</b>`:""}</span>`:"";
     $("gbars").innerHTML=sorted.map(r=>{const s=sent(r);
-      return `<div class="gbrow"><div class="gbhd"><div class="gn gname-link" data-key="${esc(folKey(r))}" title="${esc(gname(r))}">${esc(gname(r))}</div><div class="gbfol" title="${t("ผู้ติดตาม","followers")}">${cnum(gFollow(r))}</div></div><div class="gbar">${seg(s.neg,"var(--neg)","#fff")}${seg(s.neu,"var(--neu)","#4a3c10")}${seg(s.pos,"var(--pos)","#fff")}</div></div>`;
+      return `<div class="gbrow"><div class="gbhd"><div class="gn gname-link" data-key="${esc(folKey(r))}" title="${esc(gname(r))}">${esc(gname(r))}</div><div class="gbfol" title="${t("ผู้ติดตาม","followers")}">${cnum(gFollow(r))}</div></div><div class="gbar">${seg(s.pos,"var(--pos)","#fff")}${seg(s.neu,"var(--neu)","#4a3c10")}${seg(s.neg,"var(--neg)","#fff")}</div></div>`;
     }).join("");
     // animate widths after paint
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -786,9 +846,10 @@
       const sorted=[...rows].sort((a,b)=>sent(b)[key]-sent(a)[key]).slice(0,TOP);
       el.innerHTML=sorted.length?sorted.map((r,i)=>{
         const v=Math.round(sent(r)[key]);
-        return `<div class="tg-item"><div class="tg-rank">${i+1}</div>`
+        return `<div class="tg-item${i===0?" top1":""}"><div class="tg-rank">${i+1}</div>`
           +`<div class="tg-main"><div class="tg-name gname-link" data-key="${esc(folKey(r))}" title="${esc(gname(r))}">${esc(gname(r))}</div>`
-          +`<div class="tg-track"><span data-w="${v}"></span></div></div>`
+          +`<div class="tg-track"><span data-w="${v}"></span></div>`
+          +`<div class="tg-fol">${cnum(gFollow(r))} ${t("ผู้ติดตาม","followers")}</div></div>`
           +`<div class="tg-pct">${v}%</div></div>`;
       }).join(""):`<div class="tg-empty">${t("ไม่มีข้อมูล","No data")}</div>`;
     };
@@ -797,6 +858,44 @@
       document.querySelectorAll(".tg-track span").forEach(s=>{s.style.width=s.dataset.w+"%";});
     }));
     $("tgmeta").textContent=t(`${rows.length} กลุ่ม`,`${rows.length} groups`);
+  }
+
+  /* ---------- group reach charts: follower & engagement share donuts ---------- */
+  const PIE_COLORS=["#B07E1E","#2E8B62","#B5502E","#4A63C8","#8F4A9E"];
+  function shareDonut(el,data){
+    // data: [{r,v}] — top 5 get their own slice, the rest fold into a gray "Other"
+    data=data.slice().sort((a,b)=>b.v-a.v);
+    const total=data.reduce((s,d)=>s+d.v,0);
+    if(!total){el.innerHTML=`<div class="qempty">${t("ไม่มีข้อมูล","No data")}</div>`;return;}
+    const top=data.slice(0,5).filter(d=>d.v>0);
+    const otherV=data.slice(top.length).reduce((s,d)=>s+d.v,0);
+    const slices=top.map((d,i)=>({name:gname(d.r),key:folKey(d.r),v:d.v,c:PIE_COLORS[i]}));
+    if(otherV>0)slices.push({name:t("อื่น ๆ","Other"),key:"",v:otherV,c:"#9A9083"});
+    const R=44,C=2*Math.PI*R,GAP=2.5;
+    let acc=0;
+    const segs=slices.map(s=>{
+      const len=s.v/total*C;
+      const seg=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="${s.c}" stroke-width="18" stroke-linecap="butt" stroke-dasharray="${Math.max(.1,len-GAP)} ${C}" stroke-dashoffset="${-acc}"><title>${esc(s.name)}: ${s.v.toLocaleString()}</title></circle>`;
+      acc+=len;return seg;
+    }).join("");
+    const pct=(v)=>{const p=v/total*100;return p<1?"<1%":Math.round(p)+"%";};
+    el.innerHTML=`<div class="gr-pie">
+      <svg width="128" height="128" viewBox="0 0 120 120" role="img"><g transform="rotate(-90 60 60)">${segs}</g>
+        <text x="60" y="58" text-anchor="middle" class="pie-big">${cnum(total)}</text>
+        <text x="60" y="73" text-anchor="middle" class="pie-cap">${t("รวม","total")}</text></svg>
+      <div class="pleg">${slices.map(s=>
+        `<div class="pleg-row" title="${esc(s.name)}: ${s.v.toLocaleString()}"><i style="background:${s.c}"></i>`
+        +`<span class="pleg-n${s.key?" gname-link":""}"${s.key?` data-key="${esc(s.key)}"`:""}>${esc(s.name)}</span>`
+        +`<span class="pleg-v">${cnum(s.v)}</span><span class="pleg-p">${pct(s.v)}</span></div>`).join("")}</div>
+    </div>`;
+  }
+  function reachCharts(rows){
+    const folEl=$("gr-fol"),engEl=$("gr-eng");
+    if(!folEl||!engEl)return;
+    const seen=new Set();
+    const groups=rows.filter(r=>{const k=folKey(r);if(!k||seen.has(k))return false;seen.add(k);return true;});
+    shareDonut(folEl,groups.map(r=>({r,v:gFollow(r)})));
+    shareDonut(engEl,groups.map(r=>({r,v:eng(r)})));
   }
 
   function emoPanel(cls,reason,comments){
